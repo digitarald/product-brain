@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trail Impact Dashboard | Contoso Outdoor Gear</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Source Serif 4', 'Georgia', 'serif'],
+                        body: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(74, 222, 128, 0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse 60% 40% at 100% 80%, rgba(249, 115, 22, 0.04) 0%, transparent 50%),
+                        #0a0c0a;
+            color: #e8ebe8;
+            min-height: 100vh;
+        }
+        
+        .glass-panel {
+            background: rgba(17, 20, 17, 0.85);
+            border: 1px solid rgba(163, 171, 163, 0.12);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+        }
+        
+        .achievement-ring {
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+        
+        .achievement-ring circle {
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .badge-glow {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.4));
+            }
+            50% { 
+                filter: drop-shadow(0 0 16px rgba(74, 222, 128, 0.6));
+            }
+        }
+        
+        .milestone-card {
+            transition: all 0.3s ease;
+        }
+        
+        .milestone-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+        
+        .impact-metric {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .impact-metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .badge-icon {
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 32px;
+            position: relative;
+        }
+        
+        .earned-badge .badge-icon {
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(74, 222, 128, 0.05));
+            border: 2px solid rgba(74, 222, 128, 0.4);
+        }
+        
+        .locked-badge .badge-icon {
+            background: rgba(163, 171, 163, 0.05);
+            border: 2px solid rgba(163, 171, 163, 0.15);
+            opacity: 0.5;
+        }
+        
+        .progress-bar-track {
+            height: 8px;
+            background: rgba(163, 171, 163, 0.1);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #7a9b7e);
+            border-radius: 999px;
+            transition: width 1s ease-out;
+        }
+        
+        .tier-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #f97316;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+        }
+        
+        @media (max-width: 640px) {
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body x-data="dashboardData()">
+    
+    <div class="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h1 class="font-display text-4xl sm:text-5xl font-bold mb-2" style="color: #e8ebe8;">
+                        Trail Impact Dashboard
+                    </h1>
+                    <p class="text-lg" style="color: #a3aba3;">
+                        <span x-text="memberName"></span> • <span x-html="tierBadgeHtml"></span>
+                    </p>
+                </div>
+                <div class="tier-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Summit Tier
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats Overview -->
+        <div class="glass-panel p-6 mb-8">
+            <h2 class="font-display text-2xl font-semibold mb-4" style="color: #e8ebe8;">Your Environmental Impact</h2>
+            <div class="stat-grid">
+                <div class="impact-metric">
+                    <div class="text-3xl font-bold mb-1" style="color: #4ade80;" x-text="stats.co2Offset + ' kg'"></div>
+                    <div class="text-sm" style="color: #a3aba3;">CO₂ Offset</div>
+                </div>
+                <div class="impact-metric">
+                    <div class="text-3xl font-bold mb-1" style="color: #4ade80;" x-text="stats.treesEquivalent"></div>
+                    <div class="text-sm" style="color: #a3aba3;">Trees Planted</div>
+                </div>
+                <div class="impact-metric">
+                    <div class="text-3xl font-bold mb-1" style="color: #4ade80;" x-text="stats.plasticAvoided + ' kg'"></div>
+                    <div class="text-sm" style="color: #a3aba3;">Plastic Avoided</div>
+                </div>
+                <div class="impact-metric">
+                    <div class="text-3xl font-bold mb-1" style="color: #4ade80;" x-text="stats.ecoPurchasePercent + '%'"></div>
+                    <div class="text-sm" style="color: #a3aba3;">Eco-Certified</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Next Achievement -->
+        <div class="glass-panel p-6 mb-8">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h2 class="font-display text-2xl font-semibold mb-1" style="color: #e8ebe8;">Next Achievement</h2>
+                    <p class="text-sm" style="color: #a3aba3;">Keep going to unlock your next Trail Badge!</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold" style="color: #4ade80;" x-text="nextBadge.progress + '%'"></div>
+                    <div class="text-xs" style="color: #a3aba3;">Complete</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6 mb-4">
+                <div class="locked-badge">
+                    <div class="badge-icon" x-html="nextBadge.icon"></div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-semibold mb-1" style="color: #e8ebe8;" x-text="nextBadge.name"></h3>
+                    <p class="text-sm mb-3" style="color: #a3aba3;" x-text="nextBadge.description"></p>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" :style="`width: ${nextBadge.progress}%`"></div>
+                    </div>
+                    <div class="text-xs mt-2" style="color: #7a9b7e;" x-text="nextBadge.remaining"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Earned Badges -->
+        <div class="glass-panel p-6 mb-8">
+            <h2 class="font-display text-2xl font-semibold mb-6" style="color: #e8ebe8;">Trail Badges Earned</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <template x-for="badge in earnedBadges" :key="badge.id">
+                    <div class="milestone-card glass-panel p-4 earned-badge">
+                        <div class="flex items-start gap-4">
+                            <div class="badge-glow">
+                                <div class="badge-icon" x-html="badge.icon"></div>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-lg mb-1" style="color: #e8ebe8;" x-text="badge.name"></h3>
+                                <p class="text-sm mb-2" style="color: #a3aba3;" x-text="badge.description"></p>
+                                <div class="text-xs" style="color: #7a9b7e;" x-text="badge.earnedDate"></div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        
+        <!-- Detailed Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Purchases Breakdown -->
+            <div class="glass-panel p-6">
+                <h3 class="font-display text-xl font-semibold mb-4" style="color: #e8ebe8;">Purchase Impact</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span style="color: #a3aba3;">Eco-Certified Products</span>
+                            <span class="font-semibold" style="color: #4ade80;" x-text="stats.ecoPurchases + ' of ' + stats.totalPurchases"></span>
+                        </div>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" :style="`width: ${stats.ecoPurchasePercent}%`"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t" style="border-color: rgba(163, 171, 163, 0.12);">
+                        <div class="flex justify-between mb-2">
+                            <span style="color: #a3aba3;">Trade-Ins Completed</span>
+                            <span class="font-semibold" style="color: #e8ebe8;" x-text="stats.tradeIns"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t" style="border-color: rgba(163, 171, 163, 0.12);">
+                        <p class="text-sm" style="color: #7a9b7e;">
+                            🌲 Your purchases have contributed to reforestation efforts equivalent to planting <span class="font-semibold" x-text="stats.treesEquivalent"></span> trees.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Carbon Impact -->
+            <div class="glass-panel p-6">
+                <h3 class="font-display text-xl font-semibold mb-4" style="color: #e8ebe8;">Carbon Footprint</h3>
+                <div class="space-y-4">
+                    <div class="text-center py-6">
+                        <svg width="120" height="120" viewBox="0 0 120 120" class="mx-auto achievement-ring">
+                            <circle cx="60" cy="60" r="54" stroke="rgba(163, 171, 163, 0.1)" stroke-width="8" fill="none"/>
+                            <circle cx="60" cy="60" r="54" 
+                                    stroke="#4ade80" 
+                                    stroke-width="8" 
+                                    fill="none"
+                                    stroke-linecap="round"
+                                    :stroke-dasharray="339.29"
+                                    :stroke-dashoffset="339.29 - (339.29 * nextBadge.progress / 100)"/>
+                        </svg>
+                        <div class="mt-4">
+                            <div class="text-3xl font-bold" style="color: #4ade80;" x-text="stats.co2Offset + ' kg'"></div>
+                            <div class="text-sm" style="color: #a3aba3;">Lifetime CO₂ Offset</div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t" style="border-color: rgba(163, 171, 163, 0.12);">
+                        <p class="text-sm" style="color: #7a9b7e;">
+                            ♻️ That's equivalent to taking a car off the road for <span class="font-semibold">12.3 days</span> or saving <span class="font-semibold">384 liters</span> of gasoline.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Prototype Banner -->
+        <div class="mt-8 text-center py-4 px-6 glass-panel">
+            <p class="text-sm" style="color: #a3aba3;">
+                🎨 <strong style="color: #e8ebe8;">Prototype:</strong> This is a design concept for stakeholder review. See <a href="../../specs/sustainability-dashboard.md" style="color: #4ade80;" class="underline">sustainability-dashboard.md</a> for full spec.
+            </p>
+        </div>
+        
+    </div>
+    
+    <script>
+        function dashboardData() {
+            return {
+                memberName: 'Alex Rivera',
+                tierBadgeHtml: '<span style="color: #f97316;">⭐ Summit</span>',
+                
+                stats: {
+                    co2Offset: 847,
+                    treesEquivalent: 12,
+                    plasticAvoided: 4.2,
+                    ecoPurchases: 23,
+                    totalPurchases: 31,
+                    ecoPurchasePercent: 74,
+                    tradeIns: 2
+                },
+                
+                nextBadge: {
+                    name: 'Forest Guardian',
+                    description: 'Offset 1,000 kg of CO₂ through eco-certified purchases',
+                    progress: 84.7,
+                    remaining: '153 kg to go',
+                    icon: '🌳'
+                },
+                
+                earnedBadges: [
+                    {
+                        id: 1,
+                        name: 'First Step',
+                        description: 'Made your first eco-certified purchase',
+                        earnedDate: 'Earned Jan 2025',
+                        icon: '🌱'
+                    },
+                    {
+                        id: 2,
+                        name: 'Climate Keeper',
+                        description: 'Offset 100 kg of CO₂ emissions',
+                        earnedDate: 'Earned Apr 2025',
+                        icon: '☁️'
+                    },
+                    {
+                        id: 3,
+                        name: 'Eco Explorer',
+                        description: 'Purchased 10 eco-certified products',
+                        earnedDate: 'Earned Nov 2025',
+                        icon: '🎒'
+                    }
+                ]
+            }
+        }
+    </script>
+    
+</body>
+</html>
