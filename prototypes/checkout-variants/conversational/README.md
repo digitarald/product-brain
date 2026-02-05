@@ -31,7 +31,7 @@ This prototype reimagines the checkout experience as a natural conversation with
 - **Quick reply buttons** for common choices (shipping speed, payment method)
 - **Large text inputs** with clear placeholders
 - **"Continue" button** instead of generic "Submit" or "Next"
-- **Natural conversation flow** - 7 steps from email to order confirmation
+- **Natural conversation flow** - 5 steps from email to order confirmation
 
 ### Order Summary
 - Presented as a chat message at the end
@@ -51,9 +51,7 @@ This prototype reimagines the checkout experience as a natural conversation with
 2. **Shipping address** - "Perfect! Where should we ship your gear?"
 3. **Shipping speed** - Quick reply buttons for Standard/Express/Overnight
 4. **Payment method** - Quick reply buttons for Credit Card/PayPal/Apple Pay
-5. **Order summary** - "Here's your order summary! Everything look good?"
-6. **Confirmation** - "Place Order 🎉" button
-7. **Success message** - Order number and confirmation details
+5. **Order summary & confirmation** - Shows order details with "Place Order 🎉" button, then success message with order number
 
 ## Technical Stack
 
@@ -67,7 +65,7 @@ No dependencies to install. Just open `index.html` in a browser.
 ## Testing Notes
 
 Test scenarios to validate:
-- [ ] All 7 conversation steps flow smoothly
+- [ ] All 5 conversation steps flow smoothly
 - [ ] Quick reply buttons update order data correctly
 - [ ] Shipping cost changes based on speed selection
 - [ ] Order total calculates correctly
