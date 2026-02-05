@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contoso Express Checkout - One Screen Purchase</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Outfit', -apple-system, sans-serif;
+            background: linear-gradient(to bottom right, #fefcf7 0%, #f8f5f0 100%);
+            color: #2a2826;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Crimson Text', Georgia, serif;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+        
+        .checkout-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(122, 155, 126, 0.12);
+            overflow: hidden;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, #7a9b7e 0%, #6d8e71 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header-section h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        
+        .header-section p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        .cart-preview {
+            background: #fafaf8;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #ebe7e0;
+        }
+        
+        .cart-item-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+        }
+        
+        .cart-item-row:not(:last-child) {
+            border-bottom: 1px solid #ebe7e0;
+        }
+        
+        .product-icon {
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e8ede6 0%, #f2f4f1 100%);
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+        
+        .product-info {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+        }
+        
+        .product-meta {
+            font-size: 0.8rem;
+            color: #7a7672;
+        }
+        
+        .product-amount {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7a9b7e;
+        }
+        
+        .express-payment-zone {
+            margin-bottom: 2rem;
+        }
+        
+        .express-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #9a938d;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .express-divider::before,
+        .express-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd8d0;
+        }
+        
+        .express-divider span {
+            padding: 0 1rem;
+        }
+        
+        .express-btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .express-pay-btn {
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .express-pay-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .express-pay-btn.apple {
+            background: black;
+        }
+        
+        .express-pay-btn.google {
+            background: white;
+            color: #5f6368;
+            border: 1px solid #dadce0;
+        }
+        
+        .form-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #3a3633;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1.5px solid #d8d3cb;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #7a9b7e;
+            box-shadow: 0 0 0 4px rgba(122, 155, 126, 0.08);
+            background: #fefffe;
+        }
+        
+        .form-input::placeholder {
+            color: #b5afa7;
+        }
+        
+        .card-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 100px 80px;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .shipping-toggle {
+            background: #f9f7f4;
+            border: 1px solid #e5e0d8;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .toggle-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .checkbox-custom {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #7a9b7e;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            transition: all 0.2s ease;
+        }
+        
+        .checkbox-custom.checked {
+            background: #7a9b7e;
+        }
+        
+        .shipping-form {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e0d8;
+        }
+        
+        .cost-summary {
+            background: #f9f7f4;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cost-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .cost-line:last-child {
+            margin-bottom: 0;
+            padding-top: 0.75rem;
+            border-top: 2px solid #e5e0d8;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .cost-label {
+            color: #6b635d;
+        }
+        
+        .cost-value {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .total-highlight {
+            color: #7a9b7e !important;
+        }
+        
+        .purchase-button {
+            width: 100%;
+            background: linear-gradient(135deg, #7a9b7e 0%, #6d8e71 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1.25rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(122, 155, 126, 0.25);
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 0.01em;
+        }
+        
+        .purchase-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(122, 155, 126, 0.35);
+        }
+        
+        .purchase-button:active {
+            transform: translateY(-1px);
+        }
+        
+        .trust-badge {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: #9a938d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .eco-badge {
+            background: rgba(122, 155, 126, 0.1);
+            color: #5a7a5e;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 500px) {
+            .card-details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .express-btn-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container" x-data="miniCheckout()">
+        
+        <!-- Header -->
+        <div class="header-section">
+            <h1>Express Checkout</h1>
+            <p>Complete your purchase in under 30 seconds</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            
+            <!-- Cart Summary -->
+            <div class="cart-preview">
+                <div class="cart-item-row">
+                    <div class="product-icon">⛺</div>
+                    <div class="product-info">
+                        <div class="product-name">Lightweight 3-Season Tent</div>
+                        <div class="product-meta">Quantity: 1 <span class="eco-badge">ECO-CERTIFIED</span></div>
+                    </div>
+                    <div class="product-amount">$249.99</div>
+                </div>
+                <div class="cart-item-row">
+                    <div class="product-icon">🎒</div>
+                    <div class="product-info">
+                        <div class="product-name">Trail Backpack 60L</div>
+                        <div class="product-meta">Quantity: 1</div>
+                    </div>
+                    <div class="product-amount">$189.99</div>
+                </div>
+            </div>
+            
+            <!-- Express Payment Options -->
+            <div class="express-payment-zone">
+                <div class="express-btn-group">
+                    <button class="express-pay-btn apple" @click="handleExpressPay('apple')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                        </svg>
+                        Apple Pay
+                    </button>
+                    <button class="express-pay-btn google" @click="handleExpressPay('google')">
+                        <svg width="20" height="20" viewBox="0 0 24 24">
+                            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="#4285F4"/>
+                        </svg>
+                        Google Pay
+                    </button>
+                </div>
+            </div>
+            
+            <div class="express-divider">
+                <span>or complete details below</span>
+            </div>
+            
+            <!-- Email -->
+            <div class="form-section">
+                <label class="form-label">Email Address</label>
+                <input 
+                    type="email" 
+                    class="form-input" 
+                    placeholder="your.email@example.com"
+                    x-model="formData.emailAddress"
+                    @input="calculateTotal()"
+                >
+            </div>
+            
+            <!-- Card Number -->
+            <div class="form-section">
+                <label class="form-label">Card Number</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    placeholder="1234 5678 9012 3456"
+                    x-model="formData.cardNumber"
+                    @input="formatCardNumber()"
+                    maxlength="19"
+                >
+            </div>
+            
+            <!-- Card Details Row -->
+            <div class="card-details-grid">
+                <div>
+                    <label class="form-label">Expiry</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        placeholder="MM/YY"
+                        x-model="formData.expiryDate"
+                        @input="formatExpiry()"
+                        maxlength="5"
+                    >
+                </div>
+                <div>
+                    <label class="form-label">CVV</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        placeholder="123"
+                        x-model="formData.cvvCode"
+                        maxlength="4"
+                    >
+                </div>
+                <div>
+                    <label class="form-label">ZIP</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        placeholder="12345"
+                        x-model="formData.postalCode"
+                        @input="calculateTotal()"
+                        maxlength="5"
+                    >
+                </div>
+            </div>
+            
+            <!-- Shipping Address Toggle -->
+            <div class="shipping-toggle">
+                <div class="toggle-header" @click="showShipping = !showShipping">
+                    <div class="toggle-label">
+                        <div class="checkbox-custom" :class="{ 'checked': !showShipping }">
+                            <span x-show="!showShipping" style="color: white; font-size: 0.9rem;">✓</span>
+                        </div>
+                        <span>Ship to billing address</span>
+                    </div>
+                    <span x-show="!showShipping" style="font-size: 0.85rem; color: #7a9b7e; font-weight: 600;">Fastest</span>
+                </div>
+                
+                <div x-show="showShipping" class="shipping-form" x-collapse>
+                    <div class="form-section">
+                        <label class="form-label">Shipping Address</label>
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            placeholder="Street address"
+                            x-model="formData.shippingStreet"
+                        >
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+                        <div>
+                            <label class="form-label">City</label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                placeholder="City"
+                                x-model="formData.shippingCity"
+                            >
+                        </div>
+                        <div>
+                            <label class="form-label">State</label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                placeholder="CA"
+                                x-model="formData.shippingState"
+                                maxlength="2"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cost Summary -->
+            <div class="cost-summary">
+                <div class="cost-line">
+                    <span class="cost-label">Subtotal</span>
+                    <span class="cost-value">$439.98</span>
+                </div>
+                <div class="cost-line">
+                    <span class="cost-label">Shipping</span>
+                    <span class="cost-value" x-text="shippingCost"></span>
+                </div>
+                <div class="cost-line">
+                    <span class="cost-label">Tax (estimated)</span>
+                    <span class="cost-value" x-text="taxAmount"></span>
+                </div>
+                <div class="cost-line">
+                    <span class="cost-label">Total</span>
+                    <span class="cost-value total-highlight" x-text="totalAmount"></span>
+                </div>
+            </div>
+            
+            <!-- Purchase Button -->
+            <button class="purchase-button" @click="completePurchase()">
+                <span x-show="!processing">Complete Purchase</span>
+                <span x-show="processing">Processing...</span>
+            </button>
+            
+            <!-- Trust Badge -->
+            <div class="trust-badge">
+                🔒 Secure checkout • Carbon offset included
+            </div>
+            
+        </div>
+    </div>
+    
+    <script>
+        function miniCheckout() {
+            return {
+                formData: {
+                    emailAddress: '',
+                    cardNumber: '',
+                    expiryDate: '',
+                    cvvCode: '',
+                    postalCode: '',
+                    shippingStreet: '',
+                    shippingCity: '',
+                    shippingState: ''
+                },
+                showShipping: false,
+                processing: false,
+                shippingCost: '$0.00',
+                taxAmount: '$0.00',
+                totalAmount: '$439.98',
+                
+                formatCardNumber() {
+                    let value = this.formData.cardNumber.replace(/\s/g, '');
+                    let formatted = value.match(/.{1,4}/g);
+                    this.formData.cardNumber = formatted ? formatted.join(' ') : value;
+                },
+                
+                formatExpiry() {
+                    let value = this.formData.expiryDate.replace(/\D/g, '');
+                    if (value.length >= 2) {
+                        this.formData.expiryDate = value.slice(0, 2) + '/' + value.slice(2, 4);
+                    } else {
+                        this.formData.expiryDate = value;
+                    }
+                },
+                
+                calculateTotal() {
+                    let subtotal = 439.98;
+                    let shipping = 0;
+                    let tax = 0;
+                    
+                    // Simulate free shipping threshold
+                    if (subtotal >= 400) {
+                        shipping = 0;
+                    } else {
+                        shipping = 12.95;
+                    }
+                    
+                    // Estimate tax based on ZIP if entered
+                    if (this.formData.postalCode.length === 5) {
+                        let zipNum = parseInt(this.formData.postalCode);
+                        // California ZIP codes (90000-96162)
+                        if (zipNum >= 90000 && zipNum <= 96162) {
+                            tax = subtotal * 0.0925;
+                        }
+                        // Texas ZIP codes (73301-88595)
+                        else if (zipNum >= 73301 && zipNum <= 88595) {
+                            tax = subtotal * 0.0825;
+                        }
+                        // New York ZIP codes (10001-14925)
+                        else if (zipNum >= 10001 && zipNum <= 14925) {
+                            tax = subtotal * 0.08875;
+                        }
+                        // Default rate
+                        else {
+                            tax = subtotal * 0.07;
+                        }
+                    }
+                    
+                    this.shippingCost = shipping > 0 ? '$' + shipping.toFixed(2) : 'FREE';
+                    this.taxAmount = tax > 0 ? '$' + tax.toFixed(2) : '$0.00';
+                    this.totalAmount = '$' + (subtotal + shipping + tax).toFixed(2);
+                },
+                
+                handleExpressPay(provider) {
+                    alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} Pay would be triggered here.\n\nIn production, this would open the native payment sheet.`);
+                },
+                
+                completePurchase() {
+                    // Basic validation
+                    if (!this.formData.emailAddress || !this.formData.cardNumber || 
+                        !this.formData.expiryDate || !this.formData.cvvCode || 
+                        !this.formData.postalCode) {
+                        alert('Please fill in all required fields');
+                        return;
+                    }
+                    
+                    this.processing = true;
+                    
+                    // Simulate payment processing
+                    setTimeout(() => {
+                        this.processing = false;
+                        alert('🎉 Order placed successfully!\n\nOrder #CO-2026-' + Math.floor(Math.random() * 10000) + '\n\nYou\'ll receive a confirmation email shortly.\n\nThank you for shopping with Contoso!');
+                    }, 1500);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
