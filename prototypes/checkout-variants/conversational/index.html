@@ -338,7 +338,7 @@
             }
             
             .chat-input {
-                font-size: 16px; /* Prevents zoom on iOS */
+                font-size: 16px; /* Prevents automatic zoom on iOS when focusing inputs (minimum 16px required) */
             }
         }
         
@@ -437,7 +437,7 @@
                             <div class="price-breakdown">
                                 <div class="price-row">
                                     <span>Subtotal</span>
-                                    <span>$439.98</span>
+                                    <span x-text="'$' + orderData.subtotal.toFixed(2)"></span>
                                 </div>
                                 <div class="price-row">
                                     <span>Shipping <span x-text="'(' + orderData.shippingSpeed + ')'"></span></span>
@@ -445,11 +445,11 @@
                                 </div>
                                 <div class="price-row">
                                     <span>Tax</span>
-                                    <span>$36.00</span>
+                                    <span x-text="'$' + orderData.tax.toFixed(2)"></span>
                                 </div>
                                 <div class="price-row" style="color: #2d6b2d;">
                                     <span>🌱 Carbon Offset (Free)</span>
-                                    <span>-$5.00</span>
+                                    <span x-text="'$' + orderData.carbonOffset.toFixed(2)"></span>
                                 </div>
                                 <div class="price-row total">
                                     <span>Total</span>
@@ -512,7 +512,11 @@
                     shippingAddress: '',
                     shippingSpeed: 'Standard',
                     shippingCost: '12.00',
-                    paymentMethod: ''
+                    paymentMethod: '',
+                    // Pricing constants for demo
+                    subtotal: 439.98,
+                    tax: 36.00,
+                    carbonOffset: -5.00
                 },
                 
                 conversationFlow: [
@@ -665,7 +669,7 @@
                     
                     await this.delay(1500);
                     
-                    const orderNum = '#CON' + Math.floor(Math.random() * 100000);
+                    const orderNum = '#CON' + String(Math.floor(Math.random() * 100000)).padStart(5, '0');
                     
                     this.conversationHistory.push({
                         sender: 'assistant',
@@ -683,11 +687,8 @@
                 },
                 
                 calculateTotal() {
-                    const subtotal = 439.98;
                     const shipping = parseFloat(this.orderData.shippingCost);
-                    const tax = 36.00;
-                    const offset = -5.00;
-                    return (subtotal + shipping + tax + offset).toFixed(2);
+                    return (this.orderData.subtotal + shipping + this.orderData.tax + this.orderData.carbonOffset).toFixed(2);
                 },
                 
                 scrollToBottom() {
