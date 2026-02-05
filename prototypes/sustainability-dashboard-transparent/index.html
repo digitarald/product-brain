@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Environmental Impact Dashboard | Contoso Sustainability</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Core Design System Variables */
+    :root {
+      --color-base-dark: #0a0c0a;
+      --color-card-glass: rgba(17, 20, 17, 0.85);
+      --color-border-soft: rgba(163, 171, 163, 0.12);
+      --color-text-main: #e8ebe8;
+      --color-text-muted: #a3aba3;
+      --color-forest-bright: #4ade80;
+      --color-sage-mid: #7a9b7e;
+      --color-ember-warm: #f97316;
+      --color-earth-neutral: #8b7b6b;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--color-base-dark);
+      color: var(--color-text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    
+    /* Atmospheric gradient backdrop */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(74, 222, 128, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 100% 80%, rgba(249, 115, 22, 0.04) 0%, transparent 50%),
+        var(--color-base-dark);
+      pointer-events: none;
+    }
+    
+    /* Typography System */
+    .display-font {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+    
+    .metric-display {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 4.5rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--color-text-main);
+    }
+    
+    /* Glass morphism cards */
+    .glass-panel {
+      background: var(--color-card-glass);
+      border: 1px solid var(--color-border-soft);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .glass-panel:hover {
+      border-color: rgba(74, 222, 128, 0.2);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Metric value styling */
+    .primary-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .metric-unit {
+      font-size: 1.25rem;
+      color: var(--color-text-muted);
+      font-weight: 400;
+    }
+    
+    /* Breakdown bars - CSS only visualization */
+    .breakdown-bar-container {
+      width: 100%;
+      height: 48px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      margin: 1.5rem 0;
+    }
+    
+    .breakdown-segment {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+    
+    .breakdown-segment:hover {
+      filter: brightness(1.2);
+    }
+    
+    .breakdown-segment-shipping {
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      color: #0a0c0a;
+    }
+    
+    .breakdown-segment-manufacturing {
+      background: linear-gradient(135deg, #7a9b7e, #5a7b5e);
+      color: #e8ebe8;
+    }
+    
+    /* Timeline sparkline */
+    .timeline-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 120px;
+      padding: 1rem 0;
+    }
+    
+    .timeline-bar {
+      flex: 1;
+      background: linear-gradient(180deg, var(--color-forest-bright), var(--color-sage-mid));
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s ease;
+      position: relative;
+      min-width: 32px;
+    }
+    
+    .timeline-bar:hover {
+      filter: brightness(1.3);
+      transform: scaleY(1.05);
+    }
+    
+    .timeline-label {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-top: 0.5rem;
+    }
+    
+    /* Methodology footnotes */
+    .methodology-note {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-left: 3px solid var(--color-forest-bright);
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+    
+    .methodology-note strong {
+      color: var(--color-forest-bright);
+    }
+    
+    /* Expandable sections */
+    .expandable-trigger {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      transition: background 0.2s;
+      user-select: none;
+    }
+    
+    .expandable-trigger:hover {
+      background: rgba(0, 0, 0, 0.35);
+    }
+    
+    .expandable-icon {
+      transition: transform 0.3s ease;
+      color: var(--color-forest-bright);
+      font-weight: bold;
+    }
+    
+    .expandable-icon.rotated {
+      transform: rotate(180deg);
+    }
+    
+    .expandable-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .expandable-content.open {
+      max-height: 1000px;
+    }
+    
+    /* Certification badges */
+    .cert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .cert-badge:hover {
+      background: rgba(74, 222, 128, 0.12);
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+    
+    /* Progress ring - CSS only */
+    .progress-ring-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+    
+    .progress-ring-bg {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--color-forest-bright) 0deg,
+        var(--color-forest-bright) calc(var(--progress, 0) * 3.6deg),
+        rgba(163, 171, 163, 0.15) calc(var(--progress, 0) * 3.6deg),
+        rgba(163, 171, 163, 0.15) 360deg
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .progress-ring-inner {
+      width: 85%;
+      height: 85%;
+      background: var(--color-card-glass);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .progress-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      font-family: 'Source Serif 4', serif;
+    }
+    
+    .progress-label {
+      font-size: 0.7rem;
+      color: var(--color-text-muted);
+    }
+    
+    /* Header section */
+    .dashboard-header {
+      padding: 2rem 0 3rem;
+      border-bottom: 1px solid var(--color-border-soft);
+      margin-bottom: 3rem;
+    }
+    
+    .member-tier {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(167, 139, 250, 0.05));
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #a78bfa;
+    }
+    
+    /* Prototype banner */
+    .prototype-notice {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(249, 115, 22, 0.95);
+      color: white;
+      padding: 0.75rem;
+      text-align: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+    
+    .content-wrapper {
+      margin-top: 3rem;
+    }
+    
+    /* Grid layouts */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .impact-breakdown-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+    
+    @media (min-width: 768px) {
+      .impact-breakdown-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    /* Responsive typography */
+    @media (max-width: 768px) {
+      .metric-display {
+        font-size: 3rem;
+      }
+    }
+    
+    /* Utility classes */
+    .text-muted {
+      color: var(--color-text-muted);
+    }
+    
+    .text-forest {
+      color: var(--color-forest-bright);
+    }
+    
+    .mb-1 { margin-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .mb-3 { margin-bottom: 1.5rem; }
+    .mb-4 { margin-bottom: 2rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .mt-4 { margin-top: 2rem; }
+  </style>
+</head>
+
+<body>
+  <!-- Prototype Notice Banner -->
+  <div class="prototype-notice">
+    ⚠️ This is a prototype for user testing — Not production code
+  </div>
+
+  <div class="content-wrapper" style="max-width: 1280px; margin: 0 auto; padding: 0 1.5rem;">
+    
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 class="display-font" style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+            Your Environmental Impact
+          </h1>
+          <p class="text-muted" style="font-size: 1.125rem;">
+            Verified data • Transparent methodology • Real impact
+          </p>
+        </div>
+        <div style="text-align: right;">
+          <div class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.5rem;">Member</div>
+          <div style="font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem;">Alex Rivera</div>
+          <span class="member-tier">🏔️ Summit Tier</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Primary Metrics Grid -->
+    <section class="metrics-grid">
+      
+      <!-- CO2 Offset Card -->
+      <div class="glass-panel">
+        <div class="primary-metric">
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <span class="metric-display">847.3</span>
+            <span class="metric-unit">kg</span>
+          </div>
+          <h3 style="font-size: 1.25rem; font-weight: 600; margin-top: 0.5rem;">
+            Lifetime CO₂ Offset
+          </h3>
+          <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">
+            Carbon emissions avoided through your Contoso purchases
+          </p>
+        </div>
+        <div class="methodology-note mt-3">
+          <strong>Methodology:</strong> Calculated using EPA emission factors for product manufacturing and shipping. Third-party verified.
+        </div>
+      </div>
+
+      <!-- Eco Purchases Card -->
+      <div class="glass-panel">
+        <div style="display: flex; align-items: center; gap: 2rem;">
+          <div class="progress-ring-wrapper" style="--progress: 74.2">
+            <div class="progress-ring-bg">
+              <div class="progress-ring-inner">
+                <div class="progress-value text-forest">74.2%</div>
+                <div class="progress-label">eco-certified</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+              Eco-Certified Purchases
+            </h3>
+            <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">
+              23 <span style="font-size: 1.25rem; color: var(--color-text-muted);">of 31</span>
+            </p>
+            <p class="text-muted" style="font-size: 0.875rem;">
+              Products meeting environmental standards
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trees Planted Card -->
+      <div class="glass-panel">
+        <div class="primary-metric">
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <span class="metric-display">12.4</span>
+            <span class="metric-unit">trees</span>
+          </div>
+          <h3 style="font-size: 1.25rem; font-weight: 600; margin-top: 0.5rem;">
+            Trees Planted Equivalent
+          </h3>
+          <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">
+            Via partnerships with reforestation programs
+          </p>
+        </div>
+        <div class="methodology-note mt-3">
+          <strong>Calculation:</strong> Based on One Tree Planted's carbon sequestration rates (68kg CO₂/tree over 40 years).
+        </div>
+      </div>
+
+      <!-- Plastic Avoided Card -->
+      <div class="glass-panel">
+        <div class="primary-metric">
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <span class="metric-display">4.21</span>
+            <span class="metric-unit">kg</span>
+          </div>
+          <h3 style="font-size: 1.25rem; font-weight: 600; margin-top: 0.5rem;">
+            Plastic Avoided
+          </h3>
+          <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">
+            Through sustainable packaging and product choices
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- CO2 Breakdown Section -->
+    <section class="impact-breakdown-grid mt-4">
+      
+      <div class="glass-panel">
+        <h3 class="display-font" style="font-size: 1.5rem; margin-bottom: 1.5rem;">
+          CO₂ Offset Breakdown
+        </h3>
+        
+        <div class="breakdown-bar-container">
+          <div class="breakdown-segment breakdown-segment-shipping" style="width: 36.8%;">
+            312.1 kg
+          </div>
+          <div class="breakdown-segment breakdown-segment-manufacturing" style="width: 63.2%;">
+            535.2 kg
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 2rem; margin-top: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="width: 16px; height: 16px; background: linear-gradient(135deg, #4ade80, #22c55e); border-radius: 4px;"></div>
+            <span style="font-size: 0.875rem;">Shipping (36.8%)</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="width: 16px; height: 16px; background: linear-gradient(135deg, #7a9b7e, #5a7b5e); border-radius: 4px;"></div>
+            <span style="font-size: 0.875rem;">Manufacturing (63.2%)</span>
+          </div>
+        </div>
+
+        <div x-data="{ open: false }" class="mt-3">
+          <div class="expandable-trigger" @click="open = !open">
+            <span style="font-weight: 600; font-size: 0.875rem;">Learn how we calculate this</span>
+            <span class="expandable-icon" :class="{ 'rotated': open }">▼</span>
+          </div>
+          <div class="expandable-content" :class="{ 'open': open }">
+            <div style="padding: 1rem; font-size: 0.875rem; line-height: 1.6;">
+              <p style="margin-bottom: 0.75rem;">
+                <strong style="color: var(--color-forest-bright);">Shipping emissions:</strong> 
+                Calculated using distance traveled, package weight, and transportation mode. We use EPA SmartWay carrier data.
+              </p>
+              <p>
+                <strong style="color: var(--color-forest-bright);">Manufacturing offset:</strong> 
+                Based on industry averages from the Sustainable Apparel Coalition's Higg Index. We prioritize products from suppliers with verified emissions data.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trade-In Impact -->
+      <div class="glass-panel">
+        <h3 class="display-font" style="font-size: 1.5rem; margin-bottom: 1.5rem;">
+          Circular Economy Impact
+        </h3>
+        
+        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div style="font-size: 3rem; font-weight: 800; font-family: 'Source Serif 4', serif;">
+            2
+          </div>
+          <div>
+            <div style="font-size: 1.125rem; font-weight: 600;">Items Traded In</div>
+            <div class="text-muted" style="font-size: 0.875rem;">Via Contoso Gear Trade program</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(74, 222, 128, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.2);">
+          <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <span style="font-size: 2rem; font-weight: 700; font-family: 'Source Serif 4', serif; color: var(--color-forest-bright);">14.2</span>
+            <span style="color: var(--color-text-muted);">kg</span>
+          </div>
+          <p style="font-size: 0.875rem; color: var(--color-text-muted);">
+            Materials diverted from landfill
+          </p>
+        </div>
+
+        <div class="methodology-note mt-3">
+          <strong>Note:</strong> Trade-in items are refurbished for resale or recycled. Material weight verified at processing facility.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Timeline Chart -->
+    <section class="glass-panel mt-4">
+      <h3 class="display-font" style="font-size: 1.5rem; margin-bottom: 1rem;">
+        Impact Growth Over Time
+      </h3>
+      <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 2rem;">
+        Monthly CO₂ offset accumulation (September 2025 - January 2026)
+      </p>
+      
+      <div class="timeline-chart">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+          <div class="timeline-bar" style="height: 21.3%;" title="45kg"></div>
+          <div class="timeline-label">Sep</div>
+          <div style="font-size: 0.75rem; font-weight: 600; margin-top: 0.25rem;">45kg</div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+          <div class="timeline-bar" style="height: 42.1%;" title="89kg"></div>
+          <div class="timeline-label">Oct</div>
+          <div style="font-size: 0.75rem; font-weight: 600; margin-top: 0.25rem;">89kg</div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+          <div class="timeline-bar" style="height: 73.8%;" title="156kg"></div>
+          <div class="timeline-label">Nov</div>
+          <div style="font-size: 0.75rem; font-weight: 600; margin-top: 0.25rem;">156kg</div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+          <div class="timeline-bar" style="height: 110.7%;" title="234kg"></div>
+          <div class="timeline-label">Dec</div>
+          <div style="font-size: 0.75rem; font-weight: 600; margin-top: 0.25rem;">234kg</div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+          <div class="timeline-bar" style="height: 152.8%;" title="323kg"></div>
+          <div class="timeline-label">Jan</div>
+          <div style="font-size: 0.75rem; font-weight: 600; margin-top: 0.25rem;">323kg</div>
+        </div>
+      </div>
+
+      <p class="text-muted" style="font-size: 0.875rem; margin-top: 1.5rem; text-align: center;">
+        Your sustainability impact is accelerating as you make more eco-conscious choices
+      </p>
+    </section>
+
+    <!-- Certifications Section -->
+    <section class="glass-panel mt-4">
+      <h3 class="display-font" style="font-size: 1.5rem; margin-bottom: 1rem;">
+        Third-Party Certifications
+      </h3>
+      <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 2rem;">
+        Your purchases support products meeting these verified environmental standards
+      </p>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+        <div class="cert-badge">
+          <div style="font-size: 1.5rem;">🔵</div>
+          <div>
+            <div style="font-weight: 600;">bluesign</div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted);">Textile safety</div>
+          </div>
+        </div>
+
+        <div class="cert-badge">
+          <div style="font-size: 1.5rem;">🤝</div>
+          <div>
+            <div style="font-weight: 600;">Fair Trade</div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted);">Ethical labor</div>
+          </div>
+        </div>
+
+        <div class="cert-badge">
+          <div style="font-size: 1.5rem;">🌡️</div>
+          <div>
+            <div style="font-weight: 600;">Climate Neutral</div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted);">Carbon offset</div>
+          </div>
+        </div>
+
+        <div class="cert-badge">
+          <div style="font-size: 1.5rem;">🏢</div>
+          <div>
+            <div style="font-weight: 600;">B Corp</div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted);">Verified impact</div>
+          </div>
+        </div>
+      </div>
+
+      <div x-data="{ detailsOpen: false }" class="mt-3">
+        <div class="expandable-trigger" @click="detailsOpen = !detailsOpen">
+          <span style="font-weight: 600; font-size: 0.875rem;">What do these certifications mean?</span>
+          <span class="expandable-icon" :class="{ 'rotated': detailsOpen }">▼</span>
+        </div>
+        <div class="expandable-content" :class="{ 'open': detailsOpen }">
+          <div style="padding: 1rem; font-size: 0.875rem; line-height: 1.7;">
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--color-forest-bright);">bluesign:</strong> 
+              Ensures textiles are produced with minimal environmental impact and without harmful chemicals. Verified by independent auditors.
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--color-forest-bright);">Fair Trade:</strong> 
+              Products are made under fair wages and safe working conditions. Third-party certified supply chains.
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--color-forest-bright);">Climate Neutral:</strong> 
+              Companies measure, reduce, and offset 100% of carbon emissions. Annual verification required.
+            </div>
+            <div>
+              <strong style="color: var(--color-forest-bright);">B Corp:</strong> 
+              Businesses meet rigorous standards for social and environmental performance, accountability, and transparency.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Data Transparency Statement -->
+    <section class="glass-panel mt-4" style="border-left: 4px solid var(--color-forest-bright);">
+      <h3 class="display-font" style="font-size: 1.25rem; margin-bottom: 1rem;">
+        💎 Our Commitment to Data Integrity
+      </h3>
+      <p style="font-size: 0.875rem; line-height: 1.7; margin-bottom: 1rem;">
+        Every number on this dashboard comes from verified sources. We use EPA emission factors, third-party certification databases, and direct supplier data where available. When we use industry estimates, we note it explicitly.
+      </p>
+      <p style="font-size: 0.875rem; line-height: 1.7; color: var(--color-text-muted);">
+        <strong>Data Sources:</strong> EPA SmartWay Program, Higg Index (Sustainable Apparel Coalition), One Tree Planted, individual certification bodies. Updated quarterly as new data becomes available.
+      </p>
+    </section>
+
+    <!-- Footer -->
+    <footer style="margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--color-border-soft); text-align: center;">
+      <p style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 0.5rem;">
+        Sustainability Dashboard Prototype - Data Transparency Variation
+      </p>
+      <p style="font-size: 0.75rem; color: var(--color-text-muted);">
+        Built for Performance-First segment testing | See <a href="../../specs/sustainability-dashboard.md" style="color: var(--color-forest-bright);">specs/sustainability-dashboard.md</a>
+      </p>
+    </footer>
+
+  </div>
+
+  <script>
+    // Alpine.js automatically handles the x-data directives
+    // No custom JavaScript needed for this prototype
+  </script>
+</body>
+</html>
