@@ -131,7 +131,7 @@ Build interactive prototypes directly from specs using HTML/Tailwind/Alpine.js. 
 
 **Why this matters:** Seeing clicks is believing. A prototype in 5 minutes beats a slideshow in 5 meetings.
 
-**Try:** Open a spec, switch to Scaffold agent, get a working prototype. See [checkout example](prototypes/checkout-mockup/index.html).
+**Try:** Open a spec, switch to Scaffold agent, get a working prototype. See [checkout example](prototypes/checkout-mockup/index.html) or [gamified sustainability dashboard](prototypes/sustainability-dashboard-gamified/index.html).
 
 **Uses:** Scaffold agent
 
