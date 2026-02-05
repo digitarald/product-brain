@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Impact Story | Contoso Sustainability</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: '#4ade80',
+                        sage: '#7a9b7e',
+                        ember: '#f97316',
+                        earth: '#8b7b6b',
+                        backdrop: {
+                            dark: '#0a0c0a',
+                            card: 'rgba(17, 20, 17, 0.85)',
+                            border: 'rgba(163, 171, 163, 0.12)'
+                        },
+                        content: {
+                            primary: '#e8ebe8',
+                            secondary: '#a3aba3'
+                        }
+                    },
+                    fontFamily: {
+                        display: ['"Source Serif 4"', 'serif'],
+                        body: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background: #0a0c0a;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        .ambient-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .forest-radiance {
+            position: absolute;
+            top: 20%;
+            right: 10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(74, 222, 128, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+        }
+        
+        .ember-radiance {
+            position: absolute;
+            bottom: 10%;
+            left: 15%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, transparent 70%);
+            filter: blur(70px);
+        }
+        
+        .glass-panel {
+            background: rgba(17, 20, 17, 0.85);
+            border: 1px solid rgba(163, 171, 163, 0.12);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+        }
+        
+        .impact-card-hero {
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.08) 0%, rgba(122, 155, 126, 0.05) 100%);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        
+        .shimmer-effect {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shimmer-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+        
+        .stat-pulse {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="font-body text-content-primary">
+    
+    <div class="ambient-glow">
+        <div class="forest-radiance"></div>
+        <div class="ember-radiance"></div>
+    </div>
+    
+    <div class="relative z-10 min-h-screen" x-data="dashboardState()">
+        
+        <!-- Header -->
+        <header class="border-b border-backdrop-border">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="font-display text-2xl font-bold text-forest">Contoso</h1>
+                        <p class="text-sm text-content-secondary mt-1">Your Impact Story</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm font-medium" x-text="memberProfile.displayName"></p>
+                            <p class="text-xs text-content-secondary" x-text="memberProfile.tierLabel"></p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-forest to-sage flex items-center justify-center text-sm font-bold">
+                            AR
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            
+            <!-- Hero Section: Shareable Impact Card -->
+            <section class="mb-12">
+                <div class="glass-panel impact-card-hero p-8 sm:p-12 shimmer-effect" id="impact-card-shareable">
+                    <div class="max-w-2xl mx-auto">
+                        
+                        <!-- Social Proof Badge -->
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-forest/10 border border-forest/30 mb-6">
+                            <svg class="w-5 h-5 text-forest" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-sm font-medium text-forest" x-text="socialProof.percentileText"></span>
+                        </div>
+                        
+                        <!-- Main Impact Statement -->
+                        <h2 class="font-display text-4xl sm:text-5xl font-bold mb-4 leading-tight">
+                            <span x-text="impactData.lifetimeCO2"></span> kg
+                        </h2>
+                        <p class="text-xl sm:text-2xl text-content-secondary mb-8 font-display">
+                            of CO₂ offset through your choices
+                        </p>
+                        
+                        <!-- Key Metrics Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
+                            <div>
+                                <div class="text-3xl font-bold text-forest mb-1" x-text="impactData.treesPlanted"></div>
+                                <div class="text-sm text-content-secondary">Trees Planted</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold text-forest mb-1" x-text="impactData.ecoPurchases"></div>
+                                <div class="text-sm text-content-secondary">Eco Purchases</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold text-forest mb-1" x-text="impactData.ecoPurchasePercent + '%'"></div>
+                                <div class="text-sm text-content-secondary">of Orders</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold text-forest mb-1" x-text="impactData.tradeIns"></div>
+                                <div class="text-sm text-content-secondary">Trade-ins</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Comparison Insight -->
+                        <div class="glass-panel p-4 mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-ember/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-6 h-6 text-ember" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-content-primary">
+                                        <span class="font-bold text-ember" x-text="socialProof.comparisonMultiple + 'x'"></span>
+                                        more impact than the average member
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Share CTAs -->
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button 
+                                @click="handleDownloadCard()"
+                                class="flex-1 px-6 py-3 bg-forest text-backdrop-dark font-semibold rounded-lg hover:bg-forest/90 transition-colors flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                Download Card
+                            </button>
+                            <button 
+                                @click="handleShareToSocial()"
+                                class="flex-1 px-6 py-3 bg-backdrop-card border border-backdrop-border text-content-primary font-semibold rounded-lg hover:border-forest/50 transition-colors flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                                </svg>
+                                Share Story
+                            </button>
+                        </div>
+                        
+                        <p class="text-xs text-content-secondary text-center mt-4">
+                            Member since <span x-text="memberProfile.memberSince"></span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Community Impact Section -->
+            <section class="mb-12">
+                <div class="glass-panel p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <svg class="w-6 h-6 text-sage" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                        </svg>
+                        <h3 class="font-display text-2xl font-bold">Community Impact</h3>
+                    </div>
+                    
+                    <p class="text-content-secondary mb-6">
+                        Together with <span class="text-forest font-semibold" x-text="communityData.totalMembers.toLocaleString()"></span> Contoso members, we're making a difference
+                    </p>
+                    
+                    <div class="grid sm:grid-cols-3 gap-6">
+                        <div class="glass-panel p-6">
+                            <div class="text-4xl font-bold text-forest mb-2 stat-pulse" x-text="communityData.totalCO2Display"></div>
+                            <div class="text-content-secondary">Total CO₂ Offset</div>
+                        </div>
+                        <div class="glass-panel p-6">
+                            <div class="text-4xl font-bold text-forest mb-2 stat-pulse" x-text="communityData.totalTreesDisplay"></div>
+                            <div class="text-content-secondary">Trees Planted</div>
+                        </div>
+                        <div class="glass-panel p-6">
+                            <div class="text-4xl font-bold text-forest mb-2" x-text="communityData.avgOffsetPerMember + ' kg'"></div>
+                            <div class="text-content-secondary">Average per Member</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Monthly Challenge Section -->
+            <section class="mb-12">
+                <div class="glass-panel p-8 border-l-4 border-ember">
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg class="w-6 h-6 text-ember" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                                </svg>
+                                <h3 class="font-display text-xl font-bold" x-text="monthlyChallenge.title"></h3>
+                            </div>
+                            <p class="text-content-secondary mb-4" x-text="monthlyChallenge.description"></p>
+                            
+                            <!-- Progress Bar -->
+                            <div class="mb-3">
+                                <div class="flex justify-between text-sm mb-2">
+                                    <span class="text-content-primary">
+                                        <span class="font-bold text-ember" x-text="monthlyChallenge.currentProgress + ' kg'"></span> 
+                                        of <span x-text="monthlyChallenge.goalAmount + ' kg'"></span>
+                                    </span>
+                                    <span class="text-forest font-semibold" x-text="monthlyChallenge.percentComplete + '%'"></span>
+                                </div>
+                                <div class="h-3 bg-backdrop-dark rounded-full overflow-hidden">
+                                    <div 
+                                        class="h-full bg-gradient-to-r from-ember to-forest transition-all duration-500"
+                                        :style="'width: ' + monthlyChallenge.percentComplete + '%'">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-4 text-sm">
+                                <div class="flex items-center gap-1 text-content-secondary">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span x-text="monthlyChallenge.daysRemaining + ' days left'"></span>
+                                </div>
+                                <div class="flex items-center gap-1 text-content-secondary">
+                                    <span x-text="monthlyChallenge.remainingAmount + ' kg to goal'"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-shrink-0">
+                            <button class="px-6 py-3 bg-ember text-white font-semibold rounded-lg hover:bg-ember/90 transition-colors">
+                                View Challenge Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Benchmark Comparison Section -->
+            <section class="mb-12">
+                <div class="glass-panel p-8">
+                    <h3 class="font-display text-2xl font-bold mb-6">How You Compare</h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Your Impact vs Average -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">Your Impact</span>
+                                <span class="text-sm font-bold text-forest" x-text="impactData.lifetimeCO2 + ' kg'"></span>
+                            </div>
+                            <div class="h-8 bg-backdrop-dark rounded-lg overflow-hidden relative">
+                                <div 
+                                    class="absolute h-full bg-gradient-to-r from-forest to-sage"
+                                    style="width: 100%">
+                                </div>
+                                <div class="absolute inset-0 flex items-center justify-end pr-3">
+                                    <span class="text-xs font-bold text-backdrop-dark">You</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">Average Member</span>
+                                <span class="text-sm text-content-secondary" x-text="communityData.avgOffsetPerMember + ' kg'"></span>
+                            </div>
+                            <div class="h-8 bg-backdrop-dark rounded-lg overflow-hidden relative">
+                                <div 
+                                    class="absolute h-full bg-earth/50"
+                                    :style="'width: ' + (communityData.avgOffsetPerMember / impactData.lifetimeCO2 * 100) + '%'">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Top Performers -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">Top 5% of Members</span>
+                                <span class="text-sm text-content-secondary" x-text="benchmarkData.top5Percent + ' kg'"></span>
+                            </div>
+                            <div class="h-8 bg-backdrop-dark rounded-lg overflow-hidden relative">
+                                <div 
+                                    class="absolute h-full bg-sage/40"
+                                    :style="'width: ' + (benchmarkData.top5Percent / impactData.lifetimeCO2 * 100) + '%'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-forest/10 border border-forest/20 rounded-lg">
+                        <p class="text-sm text-content-primary">
+                            <span class="font-bold text-forest">Keep going!</span> 
+                            You're <span x-text="benchmarkData.distanceToTop5 + ' kg'"></span> away from joining the top 5% of mindful members.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Recent Eco-Actions -->
+            <section>
+                <div class="glass-panel p-8">
+                    <h3 class="font-display text-2xl font-bold mb-6">Recent Eco-Actions</h3>
+                    
+                    <div class="space-y-4">
+                        <template x-for="activity in recentActivities" :key="activity.timestamp">
+                            <div class="flex items-start gap-4 p-4 bg-backdrop-dark rounded-lg">
+                                <div 
+                                    class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                    :class="activity.iconBg">
+                                    <svg class="w-5 h-5" :class="activity.iconColor" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="activity.iconPath"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium mb-1" x-text="activity.action"></p>
+                                    <p class="text-xs text-content-secondary" x-text="activity.date"></p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-bold text-forest" x-text="'+' + activity.impact"></div>
+                                    <div class="text-xs text-content-secondary">CO₂ offset</div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+        
+        <!-- Share Modal -->
+        <div 
+            x-show="showShareModal" 
+            x-cloak
+            @click.self="showShareModal = false"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="glass-panel p-8 max-w-md w-full" @click.stop>
+                <div class="flex justify-between items-start mb-6">
+                    <h3 class="font-display text-2xl font-bold">Share Your Impact</h3>
+                    <button @click="showShareModal = false" class="text-content-secondary hover:text-content-primary">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-3 mb-6">
+                    <button 
+                        @click="shareViaPlatform('instagram')"
+                        class="w-full flex items-center gap-3 p-4 bg-backdrop-dark hover:bg-backdrop-dark/80 rounded-lg transition-colors">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </div>
+                        <span class="font-medium">Share to Instagram Story</span>
+                    </button>
+                    
+                    <button 
+                        @click="shareViaPlatform('linkedin')"
+                        class="w-full flex items-center gap-3 p-4 bg-backdrop-dark hover:bg-backdrop-dark/80 rounded-lg transition-colors">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </div>
+                        <span class="font-medium">Share on LinkedIn</span>
+                    </button>
+                    
+                    <button 
+                        @click="shareViaPlatform('twitter')"
+                        class="w-full flex items-center gap-3 p-4 bg-backdrop-dark hover:bg-backdrop-dark/80 rounded-lg transition-colors">
+                        <div class="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </div>
+                        <span class="font-medium">Share on Twitter</span>
+                    </button>
+                </div>
+                
+                <div class="p-4 bg-backdrop-dark rounded-lg">
+                    <p class="text-xs text-content-secondary mb-2">Or copy link:</p>
+                    <div class="flex gap-2">
+                        <input 
+                            type="text" 
+                            readonly
+                            value="contoso.com/impact/alex-rivera"
+                            class="flex-1 px-3 py-2 bg-backdrop-card border border-backdrop-border rounded text-sm text-content-primary">
+                        <button 
+                            @click="copyShareLink()"
+                            class="px-4 py-2 bg-forest text-backdrop-dark font-medium rounded hover:bg-forest/90 transition-colors">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Download Toast -->
+        <div 
+            x-show="showDownloadToast" 
+            x-transition
+            class="fixed bottom-8 right-8 glass-panel p-4 max-w-sm z-50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-forest/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium">Impact card downloaded!</p>
+                    <p class="text-sm text-content-secondary">Ready to share your story</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>
+        function dashboardState() {
+            return {
+                memberProfile: {
+                    displayName: 'Alex Rivera',
+                    tierLabel: 'Summit Tier • Since 2023',
+                    memberSince: '2023'
+                },
+                
+                impactData: {
+                    lifetimeCO2: 847,
+                    treesPlanted: 12,
+                    ecoPurchases: 23,
+                    ecoPurchasePercent: 74,
+                    tradeIns: 2
+                },
+                
+                socialProof: {
+                    percentileText: "You're in the top 15% of mindful members",
+                    comparisonMultiple: 3.2
+                },
+                
+                communityData: {
+                    totalMembers: 127432,
+                    totalCO2Display: '2.4M kg',
+                    totalTreesDisplay: '34,000+',
+                    avgOffsetPerMember: 265
+                },
+                
+                monthlyChallenge: {
+                    title: 'February Offset Challenge',
+                    description: 'Offset 50kg of CO₂ through eco-certified purchases this month',
+                    goalAmount: 50,
+                    currentProgress: 34,
+                    percentComplete: 68,
+                    daysRemaining: 23,
+                    remainingAmount: 16
+                },
+                
+                benchmarkData: {
+                    top5Percent: 1200,
+                    distanceToTop5: 353
+                },
+                
+                recentActivities: [
+                    {
+                        action: 'Purchased Eco-Certified Summit Pack 40L',
+                        date: 'February 8, 2026',
+                        impact: '18 kg',
+                        iconBg: 'bg-forest/20',
+                        iconColor: 'text-forest',
+                        iconPath: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
+                        timestamp: 1707408000
+                    },
+                    {
+                        action: 'Traded in Alpine Trail Shoes (2022)',
+                        date: 'January 28, 2026',
+                        impact: '12 kg',
+                        iconBg: 'bg-sage/20',
+                        iconColor: 'text-sage',
+                        iconPath: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+                        timestamp: 1706457600
+                    },
+                    {
+                        action: 'Purchased Recycled Base Layer Set',
+                        date: 'January 15, 2026',
+                        impact: '9 kg',
+                        iconBg: 'bg-forest/20',
+                        iconColor: 'text-forest',
+                        iconPath: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
+                        timestamp: 1705334400
+                    }
+                ],
+                
+                showShareModal: false,
+                showDownloadToast: false,
+                
+                handleDownloadCard() {
+                    console.log('Downloading impact card...');
+                    this.showDownloadToast = true;
+                    setTimeout(() => {
+                        this.showDownloadToast = false;
+                    }, 3000);
+                },
+                
+                handleShareToSocial() {
+                    console.log('Opening share modal...');
+                    this.showShareModal = true;
+                },
+                
+                shareViaPlatform(platformName) {
+                    console.log(`Sharing to ${platformName}...`);
+                    this.showShareModal = false;
+                    this.showDownloadToast = true;
+                    setTimeout(() => {
+                        this.showDownloadToast = false;
+                    }, 3000);
+                },
+                
+                copyShareLink() {
+                    console.log('Link copied to clipboard');
+                    this.showShareModal = false;
+                    this.showDownloadToast = true;
+                    setTimeout(() => {
+                        this.showDownloadToast = false;
+                    }, 3000);
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        [x-cloak] { 
+            display: none !important; 
+        }
+    </style>
+    
+</body>
+</html>

@@ -211,7 +211,7 @@ Transform a PRD into a polished single-page HTML explainer for exec review. Make
 
 **Why this matters:** Executives don't read 15-page PRDs. They scan beautiful summaries.
 
-**Try:** Pick any spec, get a dark-themed visual page. See [loyalty explainer example](prototypes/loyalty-v2-explainer/index.html).
+**Try:** Pick any spec, get a dark-themed visual page. See [loyalty explainer example](prototypes/loyalty-v2-explainer/index.html) or [sustainability dashboard](prototypes/sustainability-dashboard-social/index.html).
 
 **Uses:** `/spec-explainer` prompt
 
