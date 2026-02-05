@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Checkout - Contoso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(to bottom right, #fefcf7 0%, #f5f0e8 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .chat-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .brand-header {
+            text-align: center;
+            padding: 20px 0 32px;
+        }
+        
+        .brand-header h1 {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.75rem;
+            color: #8b7b6b;
+            letter-spacing: -0.5px;
+        }
+        
+        .brand-header .tagline {
+            font-size: 0.875rem;
+            color: #7a9b7e;
+            margin-top: 4px;
+        }
+        
+        .conversation-stream {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 100px;
+        }
+        
+        .chat-bubble {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .assistant-bubble {
+            flex-direction: row;
+        }
+        
+        .user-bubble {
+            flex-direction: row-reverse;
+        }
+        
+        .avatar-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .assistant-avatar {
+            background: linear-gradient(135deg, #7a9b7e 0%, #6a8b6e 100%);
+            box-shadow: 0 2px 8px rgba(122, 155, 126, 0.3);
+        }
+        
+        .user-avatar {
+            background: linear-gradient(135deg, #8b7b6b 0%, #7b6b5b 100%);
+            box-shadow: 0 2px 8px rgba(139, 123, 107, 0.3);
+        }
+        
+        .message-content {
+            max-width: 75%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            position: relative;
+        }
+        
+        .assistant-message {
+            background: white;
+            color: #2a2a2a;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, #7a9b7e 0%, #6a8b6e 100%);
+            color: white;
+            box-shadow: 0 2px 12px rgba(122, 155, 126, 0.3);
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-text {
+            line-height: 1.5;
+            font-size: 0.9375rem;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 6px;
+            padding: 12px 20px;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #7a9b7e;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .quick-btn {
+            padding: 10px 18px;
+            background: white;
+            border: 2px solid #7a9b7e;
+            border-radius: 24px;
+            color: #7a9b7e;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .quick-btn:hover {
+            background: #7a9b7e;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(122, 155, 126, 0.3);
+        }
+        
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(254, 252, 247, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(122, 155, 126, 0.2);
+            padding: 16px;
+        }
+        
+        .input-container {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .text-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e0d8c8;
+            border-radius: 24px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9375rem;
+            outline: none;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .chat-input:focus {
+            border-color: #7a9b7e;
+            box-shadow: 0 0 0 3px rgba(122, 155, 126, 0.1);
+        }
+        
+        .send-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #7a9b7e 0%, #6a8b6e 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(122, 155, 126, 0.4);
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .order-summary-card {
+            background: #f9f7f3;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        
+        .cart-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e0d8;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-emoji {
+            font-size: 2rem;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            color: #2a2a2a;
+            margin-bottom: 4px;
+        }
+        
+        .item-meta {
+            font-size: 0.75rem;
+            color: #7a7a7a;
+        }
+        
+        .item-price {
+            font-weight: 600;
+            color: #7a9b7e;
+            align-self: flex-start;
+        }
+        
+        .price-breakdown {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid #e5e0d8;
+        }
+        
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.875rem;
+        }
+        
+        .price-row.total {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #2a2a2a;
+            padding-top: 12px;
+            border-top: 2px solid #8b7b6b;
+        }
+        
+        .eco-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #e8f5e8;
+            color: #2d6b2d;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .prototype-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #8b7b6b;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            z-index: 1000;
+        }
+        
+        @media (max-width: 640px) {
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .chat-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(to bottom right, #1a1a1a 0%, #2a2520 100%);
+            }
+            
+            .brand-header h1 {
+                color: #c8bca8;
+            }
+            
+            .assistant-message {
+                background: #2a2a2a;
+                color: #e8e8e8;
+            }
+            
+            .order-summary-card {
+                background: #2a2520;
+            }
+            
+            .item-name {
+                color: #e8e8e8;
+            }
+            
+            .cart-item {
+                border-bottom-color: #3a3530;
+            }
+            
+            .price-breakdown {
+                border-top-color: #3a3530;
+            }
+            
+            .price-row.total {
+                border-top-color: #4a4540;
+                color: #e8e8e8;
+            }
+            
+            .chat-input {
+                background: #2a2a2a;
+                border-color: #3a3530;
+                color: #e8e8e8;
+            }
+            
+            .input-area {
+                background: rgba(26, 26, 26, 0.95);
+                border-top-color: rgba(122, 155, 126, 0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="prototype-banner">
+        ⚠️ PROTOTYPE - Conversational Checkout Experience Demo
+    </div>
+    
+    <div style="height: 32px;"></div> <!-- Spacer for banner -->
+    
+    <div class="chat-wrapper" x-data="checkoutConversation()">
+        <div class="brand-header">
+            <h1>Contoso Outdoors</h1>
+            <p class="tagline">Your friendly gear guide</p>
+        </div>
+        
+        <div class="conversation-stream">
+            <!-- Messages render here -->
+            <template x-for="(msg, idx) in conversationHistory" :key="idx">
+                <div :class="msg.sender === 'assistant' ? 'chat-bubble assistant-bubble' : 'chat-bubble user-bubble'">
+                    <div :class="msg.sender === 'assistant' ? 'avatar-icon assistant-avatar' : 'avatar-icon user-avatar'">
+                        <span x-text="msg.sender === 'assistant' ? '⛰️' : '👤'"></span>
+                    </div>
+                    <div :class="msg.sender === 'assistant' ? 'message-content assistant-message' : 'message-content user-message'">
+                        <div class="message-text" x-html="msg.text"></div>
+                        <div x-show="msg.quickReplies && msg.quickReplies.length > 0" class="quick-actions">
+                            <template x-for="reply in msg.quickReplies" :key="reply.text">
+                                <button class="quick-btn" @click="handleQuickReply(reply)" x-text="reply.text"></button>
+                            </template>
+                        </div>
+                        <div x-show="msg.showSummary" class="order-summary-card">
+                            <div class="cart-item">
+                                <div class="item-emoji">⛺</div>
+                                <div class="item-info">
+                                    <div class="item-name">Lightweight 3-Season Tent</div>
+                                    <div class="item-meta">Qty: 1 • <span class="eco-badge">🌱 Eco-Certified</span></div>
+                                </div>
+                                <div class="item-price">$249.99</div>
+                            </div>
+                            <div class="cart-item">
+                                <div class="item-emoji">🎒</div>
+                                <div class="item-info">
+                                    <div class="item-name">Trail Backpack 60L</div>
+                                    <div class="item-meta">Qty: 1</div>
+                                </div>
+                                <div class="item-price">$189.99</div>
+                            </div>
+                            <div class="price-breakdown">
+                                <div class="price-row">
+                                    <span>Subtotal</span>
+                                    <span>$439.98</span>
+                                </div>
+                                <div class="price-row">
+                                    <span>Shipping <span x-text="'(' + orderData.shippingSpeed + ')'"></span></span>
+                                    <span x-text="'$' + orderData.shippingCost"></span>
+                                </div>
+                                <div class="price-row">
+                                    <span>Tax</span>
+                                    <span>$36.00</span>
+                                </div>
+                                <div class="price-row" style="color: #2d6b2d;">
+                                    <span>🌱 Carbon Offset (Free)</span>
+                                    <span>-$5.00</span>
+                                </div>
+                                <div class="price-row total">
+                                    <span>Total</span>
+                                    <span x-text="'$' + calculateTotal()"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- Typing indicator -->
+            <div x-show="isAssistantTyping" class="chat-bubble assistant-bubble">
+                <div class="avatar-icon assistant-avatar">⛰️</div>
+                <div class="message-content assistant-message">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Input area -->
+        <div class="input-area" x-show="!orderCompleted">
+            <div class="input-container">
+                <div class="text-input-wrapper">
+                    <input 
+                        type="text" 
+                        class="chat-input" 
+                        :placeholder="currentInputPlaceholder"
+                        x-model="userInput"
+                        @keydown.enter="submitUserInput()"
+                        :disabled="isAssistantTyping"
+                        x-ref="chatInput"
+                    >
+                    <button 
+                        class="send-btn" 
+                        @click="submitUserInput()"
+                        :disabled="isAssistantTyping || userInput.trim() === ''"
+                    >
+                        Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function checkoutConversation() {
+            return {
+                conversationHistory: [],
+                userInput: '',
+                isAssistantTyping: false,
+                currentStep: 0,
+                orderCompleted: false,
+                orderData: {
+                    email: '',
+                    shippingAddress: '',
+                    shippingSpeed: 'Standard',
+                    shippingCost: '12.00',
+                    paymentMethod: ''
+                },
+                
+                conversationFlow: [
+                    {
+                        prompt: "Hi! Let's get your gear on the way 🏕️<br><br>First, what's your email?",
+                        placeholder: "your@email.com",
+                        field: 'email',
+                        quickReplies: []
+                    },
+                    {
+                        prompt: "Perfect! Where should we ship your gear?",
+                        placeholder: "123 Main St, City, State, ZIP",
+                        field: 'shippingAddress',
+                        quickReplies: []
+                    },
+                    {
+                        prompt: "Got it! How fast do you need it?",
+                        placeholder: "",
+                        field: 'shippingSpeed',
+                        quickReplies: [
+                            { text: 'Standard (5-7 days) - $12', value: 'Standard', cost: '12.00' },
+                            { text: 'Express (2-3 days) - $25', value: 'Express', cost: '25.00' },
+                            { text: 'Overnight - $45', value: 'Overnight', cost: '45.00' }
+                        ]
+                    },
+                    {
+                        prompt: "Almost there! Last step - how would you like to pay?",
+                        placeholder: "",
+                        field: 'paymentMethod',
+                        quickReplies: [
+                            { text: 'Credit Card', value: 'Credit Card' },
+                            { text: 'PayPal', value: 'PayPal' },
+                            { text: 'Apple Pay', value: 'Apple Pay' }
+                        ]
+                    },
+                    {
+                        prompt: "Here's your order summary! Everything look good?",
+                        placeholder: "",
+                        field: 'confirmation',
+                        showSummary: true,
+                        quickReplies: [
+                            { text: 'Place Order 🎉', value: 'confirm' }
+                        ]
+                    }
+                ],
+                
+                get currentInputPlaceholder() {
+                    if (this.currentStep >= this.conversationFlow.length) return '';
+                    return this.conversationFlow[this.currentStep].placeholder;
+                },
+                
+                init() {
+                    this.startConversation();
+                },
+                
+                async startConversation() {
+                    await this.delay(500);
+                    this.showAssistantMessage(this.conversationFlow[0]);
+                },
+                
+                async showAssistantMessage(stepConfig) {
+                    this.isAssistantTyping = true;
+                    this.scrollToBottom();
+                    
+                    await this.delay(1200);
+                    
+                    this.conversationHistory.push({
+                        sender: 'assistant',
+                        text: stepConfig.prompt,
+                        quickReplies: stepConfig.quickReplies || [],
+                        showSummary: stepConfig.showSummary || false
+                    });
+                    
+                    this.isAssistantTyping = false;
+                    await this.delay(100);
+                    this.scrollToBottom();
+                    
+                    if (stepConfig.quickReplies && stepConfig.quickReplies.length === 0) {
+                        await this.delay(200);
+                        this.$refs.chatInput?.focus();
+                    }
+                },
+                
+                async handleQuickReply(reply) {
+                    const currentStepConfig = this.conversationFlow[this.currentStep];
+                    
+                    // Store the value
+                    if (currentStepConfig.field === 'shippingSpeed') {
+                        this.orderData.shippingSpeed = reply.value;
+                        this.orderData.shippingCost = reply.cost;
+                    } else if (currentStepConfig.field) {
+                        this.orderData[currentStepConfig.field] = reply.value;
+                    }
+                    
+                    // Show user's choice as a message
+                    this.conversationHistory.push({
+                        sender: 'user',
+                        text: reply.text
+                    });
+                    
+                    await this.delay(100);
+                    this.scrollToBottom();
+                    
+                    // Handle special cases
+                    if (reply.value === 'confirm') {
+                        await this.completeOrder();
+                        return;
+                    }
+                    
+                    // Move to next step
+                    this.currentStep++;
+                    if (this.currentStep < this.conversationFlow.length) {
+                        await this.delay(800);
+                        await this.showAssistantMessage(this.conversationFlow[this.currentStep]);
+                    }
+                },
+                
+                async submitUserInput() {
+                    if (this.userInput.trim() === '' || this.isAssistantTyping) return;
+                    
+                    const inputValue = this.userInput.trim();
+                    const currentStepConfig = this.conversationFlow[this.currentStep];
+                    
+                    // Store the value
+                    if (currentStepConfig.field) {
+                        this.orderData[currentStepConfig.field] = inputValue;
+                    }
+                    
+                    // Show user's input as a message
+                    this.conversationHistory.push({
+                        sender: 'user',
+                        text: inputValue
+                    });
+                    
+                    this.userInput = '';
+                    await this.delay(100);
+                    this.scrollToBottom();
+                    
+                    // Move to next step
+                    this.currentStep++;
+                    if (this.currentStep < this.conversationFlow.length) {
+                        await this.delay(800);
+                        await this.showAssistantMessage(this.conversationFlow[this.currentStep]);
+                    }
+                },
+                
+                async completeOrder() {
+                    this.isAssistantTyping = true;
+                    this.scrollToBottom();
+                    
+                    await this.delay(1500);
+                    
+                    const orderNum = '#CON' + Math.floor(Math.random() * 100000);
+                    
+                    this.conversationHistory.push({
+                        sender: 'assistant',
+                        text: `🎉 Boom! Your order is confirmed!<br><br>
+                               Order <strong>${orderNum}</strong> is on its way to you.<br><br>
+                               We've sent all the details to <strong>${this.orderData.email}</strong>.<br><br>
+                               Thanks for shopping with Contoso - happy trails! 🏕️`,
+                        quickReplies: []
+                    });
+                    
+                    this.isAssistantTyping = false;
+                    this.orderCompleted = true;
+                    await this.delay(100);
+                    this.scrollToBottom();
+                },
+                
+                calculateTotal() {
+                    const subtotal = 439.98;
+                    const shipping = parseFloat(this.orderData.shippingCost);
+                    const tax = 36.00;
+                    const offset = -5.00;
+                    return (subtotal + shipping + tax + offset).toFixed(2);
+                },
+                
+                scrollToBottom() {
+                    this.$nextTick(() => {
+                        window.scrollTo({
+                            top: document.body.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    });
+                },
+                
+                delay(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
