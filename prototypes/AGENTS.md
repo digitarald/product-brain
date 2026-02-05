@@ -1,0 +1,1 @@
+REMINDER: When adding or updating slides, make sure to add them to ./index.html.
