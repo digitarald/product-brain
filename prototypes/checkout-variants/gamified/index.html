@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contoso Checkout - Gamified Experience</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(to bottom right, #fefcf7, #f8f6f0);
+            color: #2a2a2a;
+            min-height: 100vh;
+        }
+        
+        h1, h2, h3, h4 { font-family: 'Crimson Text', serif; }
+        
+        .achievement-tracker {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            margin-bottom: 32px;
+        }
+        
+        .quest-progress-rail {
+            position: relative;
+            height: 8px;
+            background: #e8e4dc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 24px 0;
+        }
+        
+        .quest-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7a9b7e, #5d7d61);
+            border-radius: 8px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .milestone-markers {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            margin-top: -20px;
+        }
+        
+        .milestone-badge {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #e8e4dc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            position: relative;
+            transition: all 0.4s ease;
+            z-index: 2;
+        }
+        
+        .milestone-badge.achieved {
+            border-color: #7a9b7e;
+            background: linear-gradient(135deg, #d4af37, #f4d03f);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+            transform: scale(1.1);
+        }
+        
+        .milestone-label {
+            position: absolute;
+            top: 64px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            color: #6b6b6b;
+            text-align: center;
+        }
+        
+        .milestone-badge.achieved + .milestone-label {
+            color: #7a9b7e;
+            font-weight: 600;
+        }
+        
+        .quest-stage {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e8e4dc;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .quest-stage.active {
+            border-color: #7a9b7e;
+            box-shadow: 0 0 0 3px rgba(122, 155, 126, 0.1);
+        }
+        
+        .quest-stage.completed {
+            background: linear-gradient(135deg, #f9fdf9, #ffffff);
+            border-color: #9dbfa0;
+        }
+        
+        .stage-heading {
+            padding: 20px 24px;
+            background: linear-gradient(to right, #fafaf8, #ffffff);
+            border-bottom: 1px solid #e8e4dc;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .stage-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #f0ebe5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .quest-stage.completed .stage-icon {
+            background: linear-gradient(135deg, #7a9b7e, #6a8b6e);
+            color: white;
+        }
+        
+        .stage-content {
+            padding: 24px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #d5d0c8;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #7a9b7e;
+            background: #fafaf8;
+            box-shadow: 0 0 0 3px rgba(122, 155, 126, 0.08);
+        }
+        
+        .quest-button {
+            background: #7a9b7e;
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 16px;
+        }
+        
+        .quest-button:hover {
+            background: #6a8b6e;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(122, 155, 126, 0.25);
+        }
+        
+        .quest-button:disabled {
+            background: #c8c4bc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .reward-display {
+            background: linear-gradient(135deg, #fff8e6, #ffffff);
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .reward-icon {
+            font-size: 28px;
+        }
+        
+        .reward-text {
+            flex: 1;
+        }
+        
+        .points-counter {
+            background: #7a9b7e;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .eco-impact-card {
+            background: linear-gradient(135deg, #e8f5e9, #ffffff);
+            border: 2px solid #7a9b7e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .encouragement-banner {
+            background: linear-gradient(90deg, #7a9b7e, #6a8b6e);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 24px;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 16px rgba(122, 155, 126, 0.3); }
+            50% { box-shadow: 0 4px 24px rgba(122, 155, 126, 0.5); }
+        }
+        
+        .celebration-confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #d4af37;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .checkmark-animation {
+            animation: check-bounce 0.5s ease;
+        }
+        
+        @keyframes check-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        
+        .victory-screen {
+            text-align: center;
+            padding: 48px 24px;
+        }
+        
+        .trophy-display {
+            font-size: 80px;
+            margin-bottom: 24px;
+            animation: trophy-shine 2s ease-in-out infinite;
+        }
+        
+        @keyframes trophy-shine {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); filter: brightness(1.2); }
+        }
+        
+        .earned-badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin: 32px 0;
+        }
+        
+        .earned-badge-card {
+            background: white;
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .badge-emblem {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .cart-preview {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .cart-item-row {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #e8e4dc;
+        }
+        
+        .cart-item-row:last-child {
+            border-bottom: none;
+        }
+        
+        .item-thumbnail {
+            font-size: 40px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f3ef;
+            border-radius: 8px;
+        }
+        
+        .price-summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 15px;
+        }
+        
+        .price-summary-row.total {
+            font-weight: 700;
+            font-size: 18px;
+            border-top: 2px solid #e8e4dc;
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+        
+        .payment-choice {
+            border: 2px solid #d5d0c8;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .payment-choice:hover {
+            border-color: #7a9b7e;
+            background: #fafaf8;
+        }
+        
+        .payment-choice.selected {
+            border-color: #7a9b7e;
+            background: linear-gradient(135deg, rgba(122, 155, 126, 0.05), rgba(122, 155, 126, 0.02));
+        }
+        
+        .payment-badge {
+            width: 44px;
+            height: 44px;
+            background: #f0ebe5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div x-data="checkoutQuest()" class="max-w-6xl mx-auto px-4 py-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-semibold mb-2" style="color: #8b7b6b;">Your Checkout Quest</h1>
+            <p class="text-lg" style="color: #6b6b6b;">Complete each stage to unlock rewards and badges</p>
+        </div>
+        
+        <!-- Achievement Tracker -->
+        <div class="achievement-tracker">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Quest Progress</h3>
+                <div class="points-counter">
+                    <span x-text="earnedPoints"></span> Points
+                </div>
+            </div>
+            
+            <div class="quest-progress-rail">
+                <div class="quest-progress-fill" :style="`width: ${progressPercentage}%`"></div>
+            </div>
+            
+            <div class="milestone-markers">
+                <div>
+                    <div class="milestone-badge" :class="{'achieved': currentStage >= 1}">
+                        <span x-show="currentStage >= 1" class="checkmark-animation">✓</span>
+                        <span x-show="currentStage < 1">📍</span>
+                    </div>
+                    <div class="milestone-label">Address Hero</div>
+                </div>
+                <div>
+                    <div class="milestone-badge" :class="{'achieved': currentStage >= 2}">
+                        <span x-show="currentStage >= 2" class="checkmark-animation">✓</span>
+                        <span x-show="currentStage < 2">💳</span>
+                    </div>
+                    <div class="milestone-label">Payment Pro</div>
+                </div>
+                <div>
+                    <div class="milestone-badge" :class="{'achieved': currentStage >= 3}">
+                        <span x-show="currentStage >= 3" class="checkmark-animation">✓</span>
+                        <span x-show="currentStage < 3">🌱</span>
+                    </div>
+                    <div class="milestone-label">Eco Champion</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Encouragement Banner -->
+        <div x-show="currentStage < 3 && currentStage > 0" class="encouragement-banner">
+            <span x-show="currentStage === 1">🎯 Awesome! Keep going - you're almost there!</span>
+            <span x-show="currentStage === 2">🚀 Final stretch! Your rewards await!</span>
+        </div>
+        
+        <!-- Rewards Display -->
+        <div x-show="currentStage > 0 && currentStage < 3" class="reward-display">
+            <div class="reward-icon">⭐</div>
+            <div class="reward-text">
+                <div class="font-semibold" style="color: #7a9b7e;">Loyalty Rewards Active!</div>
+                <div class="text-sm" style="color: #6b6b6b;">You're earning <strong>+150 Trail Points</strong> with this order</div>
+            </div>
+        </div>
+        
+        <!-- Eco Impact Card -->
+        <div x-show="currentStage > 0 && currentStage < 3" class="eco-impact-card">
+            <div class="flex items-center gap-3">
+                <div class="text-4xl">🌲</div>
+                <div>
+                    <div class="font-semibold text-lg" style="color: #7a9b7e;">Carbon Impact</div>
+                    <div class="text-sm" style="color: #5d7d61;">This order plants <strong>2 trees</strong> and offsets shipping emissions</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Main Quest Stages -->
+            <div class="lg:col-span-2">
+                
+                <!-- Stage 1: Shipping Info -->
+                <div class="quest-stage" :class="{'active': activeStage === 0, 'completed': currentStage > 0}">
+                    <div class="stage-heading" @click="activeStage = 0">
+                        <div class="stage-icon">
+                            <span x-show="currentStage > 0">✓</span>
+                            <span x-show="currentStage <= 0">📦</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">Delivery Details</h3>
+                            <p class="text-sm" style="color: #6b6b6b;">Where should we send your gear?</p>
+                        </div>
+                    </div>
+                    
+                    <div x-show="activeStage === 0" class="stage-content">
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" class="input-field" placeholder="First Name" x-model="formData.firstName">
+                                <input type="text" class="input-field" placeholder="Last Name" x-model="formData.lastName">
+                            </div>
+                            <input type="text" class="input-field" placeholder="Street Address" x-model="formData.address">
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" class="input-field" placeholder="City" x-model="formData.city">
+                                <input type="text" class="input-field" placeholder="State" x-model="formData.state">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" class="input-field" placeholder="Zip Code" x-model="formData.zip">
+                                <input type="email" class="input-field" placeholder="Email" x-model="formData.email">
+                            </div>
+                            <button 
+                                class="quest-button" 
+                                @click="completeStage(1)"
+                                :disabled="!canCompleteShipping">
+                                Continue to Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stage 2: Payment Info -->
+                <div class="quest-stage" :class="{'active': activeStage === 1, 'completed': currentStage > 1}">
+                    <div class="stage-heading" @click="activeStage = currentStage >= 1 ? 1 : 0">
+                        <div class="stage-icon">
+                            <span x-show="currentStage > 1">✓</span>
+                            <span x-show="currentStage <= 1">💳</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">Payment Method</h3>
+                            <p class="text-sm" style="color: #6b6b6b;">Choose how you'd like to pay</p>
+                        </div>
+                    </div>
+                    
+                    <div x-show="activeStage === 1 && currentStage >= 1" class="stage-content">
+                        <div class="space-y-3">
+                            <div class="payment-choice" :class="{'selected': formData.paymentMethod === 'apple'}" @click="formData.paymentMethod = 'apple'">
+                                <div class="payment-badge">🍎</div>
+                                <div>
+                                    <div class="font-semibold">Apple Pay</div>
+                                    <div class="text-xs" style="color: #6b6b6b;">Fast & Secure</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-choice" :class="{'selected': formData.paymentMethod === 'card'}" @click="formData.paymentMethod = 'card'">
+                                <div class="payment-badge">💳</div>
+                                <div>
+                                    <div class="font-semibold">Credit Card</div>
+                                    <div class="text-xs" style="color: #6b6b6b;">Visa, Mastercard, Amex</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-choice" :class="{'selected': formData.paymentMethod === 'paypal'}" @click="formData.paymentMethod = 'paypal'">
+                                <div class="payment-badge">🅿️</div>
+                                <div>
+                                    <div class="font-semibold">PayPal</div>
+                                    <div class="text-xs" style="color: #6b6b6b;">Buyer Protection</div>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                class="quest-button" 
+                                @click="completeStage(2)"
+                                :disabled="!formData.paymentMethod">
+                                Proceed to Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stage 3: Final Review -->
+                <div class="quest-stage" :class="{'active': activeStage === 2, 'completed': currentStage > 2}">
+                    <div class="stage-heading" @click="activeStage = currentStage >= 2 ? 2 : 1">
+                        <div class="stage-icon">
+                            <span x-show="currentStage > 2">✓</span>
+                            <span x-show="currentStage <= 2">👀</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">Review & Confirm</h3>
+                            <p class="text-sm" style="color: #6b6b6b;">One last check before completion</p>
+                        </div>
+                    </div>
+                    
+                    <div x-show="activeStage === 2 && currentStage >= 2" class="stage-content">
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-3">Delivery Information</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg text-sm">
+                                <p x-text="`${formData.firstName} ${formData.lastName}`"></p>
+                                <p x-text="formData.address"></p>
+                                <p x-text="`${formData.city}, ${formData.state} ${formData.zip}`"></p>
+                                <p x-text="formData.email"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-3">Payment Method</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg text-sm">
+                                <p x-show="formData.paymentMethod === 'apple'">🍎 Apple Pay</p>
+                                <p x-show="formData.paymentMethod === 'card'">💳 Credit Card</p>
+                                <p x-show="formData.paymentMethod === 'paypal'">🅿️ PayPal</p>
+                            </div>
+                        </div>
+                        
+                        <button 
+                            class="quest-button" 
+                            @click="completeQuest()">
+                            Complete Your Quest! 🎉
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Victory Screen -->
+                <div x-show="questComplete" class="quest-stage active">
+                    <div class="victory-screen">
+                        <div class="trophy-display">🏆</div>
+                        <h2 class="text-3xl font-semibold mb-4" style="color: #7a9b7e;">Quest Complete!</h2>
+                        <p class="text-lg mb-6" style="color: #6b6b6b;">Congratulations! Your order is confirmed and your rewards are unlocked.</p>
+                        
+                        <div class="earned-badges-grid">
+                            <div class="earned-badge-card">
+                                <div class="badge-emblem">📍</div>
+                                <div class="font-semibold text-sm">Address Hero</div>
+                                <div class="text-xs" style="color: #6b6b6b;">Delivery Master</div>
+                            </div>
+                            
+                            <div class="earned-badge-card">
+                                <div class="badge-emblem">💳</div>
+                                <div class="font-semibold text-sm">Payment Pro</div>
+                                <div class="text-xs" style="color: #6b6b6b;">Transaction Expert</div>
+                            </div>
+                            
+                            <div class="earned-badge-card">
+                                <div class="badge-emblem">🌱</div>
+                                <div class="font-semibold text-sm">Eco Champion</div>
+                                <div class="text-xs" style="color: #6b6b6b;">Planet Protector</div>
+                            </div>
+                        </div>
+                        
+                        <div class="reward-display">
+                            <div class="reward-icon">⭐</div>
+                            <div class="reward-text">
+                                <div class="font-semibold text-lg" style="color: #7a9b7e;">+150 Trail Points Earned!</div>
+                                <div class="text-sm" style="color: #6b6b6b;">Use them on your next adventure</div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-6 p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl mb-2">🌲🌲</div>
+                            <div class="font-semibold" style="color: #5d7d61;">2 Trees Planted!</div>
+                            <div class="text-sm" style="color: #6b6b6b;">Your order is carbon-neutral</div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- Sidebar: Cart Preview -->
+            <div class="lg:col-span-1">
+                <div class="cart-preview sticky top-8">
+                    <h3 class="text-xl font-semibold mb-4">Your Cart</h3>
+                    
+                    <div class="cart-item-row">
+                        <div class="item-thumbnail">⛺</div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Lightweight 3-Season Tent</div>
+                            <div class="text-xs" style="color: #6b6b6b;">Qty: 1 • Eco-Certified</div>
+                            <div class="font-semibold mt-2">$249.99</div>
+                        </div>
+                    </div>
+                    
+                    <div class="cart-item-row">
+                        <div class="item-thumbnail">🎒</div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Trail Backpack 60L</div>
+                            <div class="text-xs" style="color: #6b6b6b;">Qty: 1</div>
+                            <div class="font-semibold mt-2">$189.99</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t-2" style="border-color: #e8e4dc;">
+                        <div class="price-summary-row">
+                            <span style="color: #6b6b6b;">Subtotal</span>
+                            <span>$439.98</span>
+                        </div>
+                        <div class="price-summary-row">
+                            <span style="color: #6b6b6b;">Shipping</span>
+                            <span>$12.00</span>
+                        </div>
+                        <div class="price-summary-row">
+                            <span style="color: #6b6b6b;">Tax</span>
+                            <span>$36.00</span>
+                        </div>
+                        <div class="price-summary-row">
+                            <span style="color: #5d7d61;">🌱 Carbon Offset</span>
+                            <span style="color: #5d7d61;">FREE</span>
+                        </div>
+                        <div class="price-summary-row total">
+                            <span>Total</span>
+                            <span>$487.98</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+    
+    <script>
+        function checkoutQuest() {
+            return {
+                currentStage: 0,
+                activeStage: 0,
+                questComplete: false,
+                earnedPoints: 0,
+                formData: {
+                    firstName: '',
+                    lastName: '',
+                    address: '',
+                    city: '',
+                    state: '',
+                    zip: '',
+                    email: '',
+                    paymentMethod: ''
+                },
+                
+                get progressPercentage() {
+                    return (this.currentStage / 3) * 100;
+                },
+                
+                get canCompleteShipping() {
+                    return this.formData.firstName && 
+                           this.formData.lastName && 
+                           this.formData.address && 
+                           this.formData.city && 
+                           this.formData.state && 
+                           this.formData.zip && 
+                           this.formData.email;
+                },
+                
+                completeStage(stageNum) {
+                    this.currentStage = stageNum;
+                    this.activeStage = stageNum;
+                    
+                    if (stageNum === 1) {
+                        this.earnedPoints = 50;
+                        this.triggerCelebration();
+                    } else if (stageNum === 2) {
+                        this.earnedPoints = 100;
+                        this.triggerCelebration();
+                    }
+                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                
+                completeQuest() {
+                    this.currentStage = 3;
+                    this.questComplete = true;
+                    this.earnedPoints = 150;
+                    this.triggerConfetti();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                
+                triggerCelebration() {
+                    console.log('Stage completed!');
+                },
+                
+                triggerConfetti() {
+                    const confettiContainer = document.createElement('div');
+                    confettiContainer.className = 'celebration-confetti';
+                    document.body.appendChild(confettiContainer);
+                    
+                    const colors = ['#d4af37', '#7a9b7e', '#8b7b6b', '#f4d03f'];
+                    
+                    for (let i = 0; i < 50; i++) {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti-piece';
+                        confetti.style.left = Math.random() * 100 + 'vw';
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                        confettiContainer.appendChild(confetti);
+                    }
+                    
+                    setTimeout(() => {
+                        confettiContainer.remove();
+                    }, 3000);
+                }
+            }
+        }
+    </script>
+    
+</body>
+</html>
